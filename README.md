@@ -21,7 +21,7 @@ Validate only files you have modified, `--git-diff-develop` this flag will take 
 if `-rbranch` is not specified it will be `main`
 
 ```
-ruby unused.rb --git-diff-develop -d /my-project-folder/ -rbranch develop
+ruby unused.rb --git-diff-develop -d /my-project-folder/ -b develop
 ```
 
 looking for help?
@@ -37,7 +37,7 @@ file="unused.rb"
 if [ -f "$file" ]
 then
     echo "$file found."
-    ruby unused.rb -env xcode
+    ruby unused.rb -e xcode -d .
 else
     echo "unused.rb doesn't exist"
 fi
@@ -45,4 +45,15 @@ fi
 
 Next steps:
 
-- Adding git diff support
+- Add more validations
+- Add a better xcode support
+
+## Dependencies
+
+```
+bundle install
+```
+
+https://github.com/ruby/optparse
+
+https://github.com/ruby-git/ruby-git

@@ -33,20 +33,20 @@ end
 $options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: your_app [options]"
-  opts.on('-env [ARG]', '--env', "Specify xcode if it is from xcode") do |v|
+  opts.on('-e [ARG]', '--env [ARG]', "Specify xcode if it is from xcode") do |v|
     $options[:env] = v
   end
-  opts.on('-rbranch [ARG]', '--rbranch', "Specify reference branch") do |v|
-    $options[:rbranch] = v
+  opts.on('-b [ARG]', '--branch [ARG]', "Specify reference branch") do |v|
+    $options[:branch] = v
   end
-  opts.on('-d [ARG]', '--d [ARG]', "Specify the directory to search") do |v|
+  opts.on('-d [ARG]', '--dir [ARG]', "Specify the directory to search") do |v|
     $options[:dir] = v
     puts "Debugging at ".green + "#{v}".bold.italic.yellow
   end
   opts.on('--skip-predefined-ignores', 'skip ignores') do
     $options[:skip_ignores] = true
   end
-  opts.on('--git-diff-develop', 'compares files modified in the current branch, not compatible with dir option') do
+  opts.on('--git-diff', 'compares files modified in the current branch, not compatible with dir option') do
     $options[:git_diff] = true
   end
   opts.on('--ignore', 'ignores') do
@@ -58,11 +58,8 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-if $options[:env] != 'xcode' 
-  if not $options[:dir]
-    puts 'Error: -d argument parameter not found'.red
-    exit
-  elsif not File.directory?($options[:dir])
+if $options[:env] != 'xcode'
+  if not File.directory?($options[:dir])
     puts 'Error: -d argument should be a valid folder'.red
     exit
   end
@@ -126,18 +123,18 @@ class Unused
     items = []
     all_files = []
     files_to_look_for = []
+    ref_branch = "main"
     if $options[:git_diff]
       g = Git.open(".")
-      rbranch = "main"
-      if $options[:rbranch]
-        rbranch = $options[:rbranch] 
+      if $options[:branch]
+        ref_branch = $options[:branch] 
       end 
-      g.gtree(rbranch).diff(g.branch.name).each do |file_diff|
+      g.gtree(ref_branch).diff(g.branch.name).each do |file_diff|
         if File.exists?("../../" + file_diff.path) && file_diff.path.end_with?(".swift")
           all_files.push("../../" + file_diff.path)
         end
       end
-      dir = "#{$options[:dir]}/**/*.swift"
+      dir = $options[:dir] ? "#{$options[:dir]}/**/*.swift" : "**/*.swift"
       files_to_look_for = Dir.glob(dir).reject do |path|
         File.directory?(path)
       end
