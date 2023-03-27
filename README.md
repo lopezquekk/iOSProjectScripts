@@ -5,18 +5,23 @@
 I took this script from: https://github.com/PaulTaykalo/swift-scripts and added a few things.
 
 - Support for name arguments
-- Add previews structs avoiding this false positive
+- Added previews structs avoiding this false positive
+- added git diff from a specific branch
 
 ### How to used it
 
 ```
-ruby unused.rb
+ruby unused.rb -d /project-folder
+# For bigger projects when you need to valid a specific folder
+ruby unused.rb -d /project-folder/specific-folder
 ```
 
-for larger projects you can especify the forlder
+Validate only files you have modified, `--git-diff-develop` this flag will take the files changed between current branch and `-rbranch` flag
+
+if `-rbranch` is not specified it will be `main`
 
 ```
-ruby unused.rb -d myFolder/anotherFolder
+ruby unused.rb --git-diff-develop -d /my-project-folder/ -rbranch develop
 ```
 
 looking for help?

@@ -36,6 +36,9 @@ OptionParser.new do |opts|
   opts.on('-env [ARG]', '--env', "Specify xcode if it is from xcode") do |v|
     $options[:env] = v
   end
+  opts.on('-rbranch [ARG]', '--rbranch', "Specify reference branch") do |v|
+    $options[:rbranch] = v
+  end
   opts.on('-d [ARG]', '--d [ARG]', "Specify the directory to search") do |v|
     $options[:dir] = v
     puts "Debugging at ".green + "#{v}".bold.italic.yellow
@@ -125,7 +128,11 @@ class Unused
     files_to_look_for = []
     if $options[:git_diff]
       g = Git.open(".")
-      g.gtree('develop').diff(g.branch.name).each do |file_diff|
+      rbranch = "main"
+      if $options[:rbranch]
+        rbranch = $options[:rbranch] 
+      end 
+      g.gtree(rbranch).diff(g.branch.name).each do |file_diff|
         if File.exists?("../../" + file_diff.path) && file_diff.path.end_with?(".swift")
           all_files.push("../../" + file_diff.path)
         end
@@ -164,7 +171,6 @@ class Unused
     storyboards = Dir.glob("**/*.storyboard")
     
     if $options[:git_diff]
-      puts "por aqui"
       #find_usages_in_files(files_to_look_for, xibs + storyboards, items)
     else
       find_usages_in_files(all_files, xibs + storyboards, items)
