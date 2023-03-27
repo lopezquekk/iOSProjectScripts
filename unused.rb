@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 #encoding: utf-8
 require 'optparse'
+require 'git'
 Encoding.default_external = Encoding::UTF_8
 
 class String
@@ -42,6 +43,9 @@ OptionParser.new do |opts|
   opts.on('--skip-predefined-ignores', 'skip ignores') do
     $options[:skip_ignores] = true
   end
+  opts.on('--git-diff-develop', 'compares files modified in the current branch, not compatible with dir option') do
+    $options[:git_diff] = true
+  end
   opts.on('--ignore', 'ignores') do
     $options[:ignore] = true
   end
@@ -50,6 +54,20 @@ OptionParser.new do |opts|
     exit
   end
 end.parse!
+
+if $options[:env] != 'xcode' 
+  if not $options[:dir]
+    puts 'Error: -d argument parameter not found'.red
+    exit
+  elsif not File.directory?($options[:dir])
+    puts 'Error: -d argument should be a valid folder'.red
+    exit
+  end
+end
+
+if not $options[:dir]
+  parser.error('-d parameter not found')
+end
 
 class Item
   def initialize(file, line, at)
@@ -103,11 +121,25 @@ end
 class Unused
   def find
     items = []
-    dir = "#{$options[:dir]}/**/*.swift"
-    all_files = Dir.glob(dir).reject do |path|
-      File.directory?(path)
+    all_files = []
+    files_to_look_for = []
+    if $options[:git_diff]
+      g = Git.open(".")
+      g.gtree('develop').diff(g.branch.name).each do |file_diff|
+        if File.exists?("../../" + file_diff.path) && file_diff.path.end_with?(".swift")
+          all_files.push("../../" + file_diff.path)
+        end
+      end
+      dir = "#{$options[:dir]}/**/*.swift"
+      files_to_look_for = Dir.glob(dir).reject do |path|
+        File.directory?(path)
+      end
+    else
+      dir = "#{$options[:dir]}/**/*.swift"
+      all_files = Dir.glob(dir).reject do |path|
+        File.directory?(path)
+      end
     end
-
     all_files.each { |my_text_file|
       file_items = grab_items(my_text_file)
       file_items = filter_items(file_items)
@@ -130,9 +162,13 @@ class Unused
 
     xibs = Dir.glob("**/*.xib")
     storyboards = Dir.glob("**/*.storyboard")
-
-    find_usages_in_files(all_files, xibs + storyboards, items)
-
+    
+    if $options[:git_diff]
+      puts "por aqui"
+      #find_usages_in_files(files_to_look_for, xibs + storyboards, items)
+    else
+      find_usages_in_files(all_files, xibs + storyboards, items)
+    end
   end  
 
   def ignore_files_with_regexps(files, regexps)
