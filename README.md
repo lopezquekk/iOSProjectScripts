@@ -16,12 +16,12 @@ ruby unused.rb -d /project-folder
 ruby unused.rb -d /project-folder/specific-folder
 ```
 
-Validate only files you have modified, `--git-diff-develop` this flag will take the files changed between current branch and `-rbranch` flag
+Validate only files you have modified, `--git-diff` this flag will take the files changed between current branch and `-rbranch` flag
 
 if `-rbranch` is not specified it will be `main`
 
 ```
-ruby unused.rb --git-diff-develop -d /my-project-folder/ -b develop
+ruby unused.rb --git-diff -d /my-project-folder/ -b develop
 ```
 
 looking for help?
